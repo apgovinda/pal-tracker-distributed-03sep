@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Pivotal.Extensions.Configuration.ConfigServer;
+using Steeltoe.Extensions.Configuration.CloudFoundry;
 
 namespace BacklogServer
 {
@@ -18,7 +18,7 @@ namespace BacklogServer
         public static IWebHostBuilder WebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                .UseCloudFoundryHosting()
-                .AddConfigServer()
+               .AddCloudFoundry()
                .UseStartup<Startup>();
     }
 }

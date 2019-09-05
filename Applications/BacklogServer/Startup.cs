@@ -10,12 +10,6 @@ using Steeltoe.CloudFoundry.Connector.MySql.EFCore;
 using Pivotal.Discovery.Client;
 using Steeltoe.Common.Discovery;
 using Steeltoe.CircuitBreaker.Hystrix;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Steeltoe.Security.Authentication.CloudFoundry;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 namespace BacklogServer
 {
     public class Startup
@@ -28,25 +22,14 @@ namespace BacklogServer
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            //services.AddMvc();
-            services.AddMvc(mvcOptions =>
-            {
-                if (!Configuration.GetValue("DISABLE_AUTH", false))
-                {
-                    // Set Authorized as default policy
-                   var policy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
-                    .RequireAuthenticatedUser()
-                    .RequireClaim("scope", "uaa.resource")
-                    .Build();
-                    mvcOptions.Filters.Add(new AuthorizeFilter(policy));
-                }
-            });
+            services.AddMvc();
+
             services.AddDbContext<StoryContext>(options => options.UseMySql(Configuration));
             services.AddScoped<IStoryDataGateway, StoryDataGateway>();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<IProjectClient>(sp =>
             {
                 var handler = new DiscoveryHttpClientHandler(sp.GetService<IDiscoveryClient>());
@@ -56,16 +39,12 @@ public void ConfigureServices(IServiceCollection services)
                 };
 
                 //return new ProjectClient(httpClient);
-                 var logger = sp.GetService<ILogger<ProjectClient>>();
-                 var contextAccessor = sp.GetService<IHttpContextAccessor>();
-                 return new ProjectClient(httpClient, logger,() => contextAccessor.HttpContext.GetTokenAsync("access_token") );
+                var logger = sp.GetService<ILogger<ProjectClient>>();
+                return new ProjectClient(httpClient, logger);
             });
-
             services.AddDiscoveryClient(Configuration);
+            
             services.AddHystrixMetricsStream(Configuration);
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddCloudFoundryJwtBearer(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
