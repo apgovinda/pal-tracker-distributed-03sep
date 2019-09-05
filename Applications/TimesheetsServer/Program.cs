@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Steeltoe.Extensions.Configuration.CloudFoundry;
+using Pivotal.Extensions.Configuration.ConfigServer;
 
 namespace TimesheetsServer
 {
@@ -17,9 +17,8 @@ namespace TimesheetsServer
 
         public static IWebHostBuilder WebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                // https://github.com/aspnet/KestrelHttpServer/issues/1998#issuecomment-322922164
-                .UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build())
-                .AddCloudFoundry()
-                .UseStartup<Startup>();
+               .UseCloudFoundryHosting()
+               .AddConfigServer()
+               .UseStartup<Startup>();
     }
 }
